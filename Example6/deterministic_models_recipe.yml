@@ -2912,4 +2912,4 @@ diagnostics:
 
     scripts:
       multiple_regresion:
-        script: /home/jmindlin/historical_period_storylines/scripts/multiple_linear_regression_ua_sst_pr_psl_tas.py
+        script: /home/jmindlin/BF_codes/example_codes/Example6/deterministic_models_diagnostic.py
