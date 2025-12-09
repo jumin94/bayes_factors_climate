@@ -1,0 +1,48 @@
+name: climate-bayes-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11.13
+  - numpy
+  - pandas
+  - xarray
+  - netcdf4
+  - scipy
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - statsmodels
+  - patsy
+  - dask
+  - bottleneck
+  - pytest
+  - pip
+  - pymc
+  - arviz
+  - jupyterlab
+  - notebook
+  - pillow
+  - h5netcdf
+  - pandas
+  - cftime
+  - pyproj
+  - shapely
+  - rtree
+  - esmpy            # optional spatial remapping helper (used sometimes with regridding)
+  - esmvaltool
+  - esmvalcore
+  - libnetcdf
+  - xarray-spatial
+  - xskillscore
+  - openpyxl
+  - netCDF4
+  - zarr
+  - numba
+
+
+  # pip fallbacks 
+  - pip:
+    - pynio               # optional, only if using NCL I/O files
+    - cfgrib              # if you need GRIB support via pip
+    # Add other pip-only packages here if needed
