@@ -1,16 +1,12 @@
 # Bayes Factors for Climate Science: Quantifying Evidence for Scientific Hypotheses
-### Examples and Environment
-### Julia Mindlin & Marlene Kretschmer
+Julia Mindlin & Marlene Kretschmer | Leipzig Institute for Meteorology, Leipzig University, Leipzig, Germany
 
 ## Overview
-This repository contains the full set of Python examples accompanying the analysis of teleconnections, Bayesian evidence quantification, partial regression, and storyline-based likelihoods.  
+This repository contains the full set of Python examples accompanying the article...
 All examples are written for **Python 3.11** and run in a reproducible environment provided in `environment.yml`.
 
 ---
 
-## 1. Installing the Environment
-
-### Using Conda or Mamba (recommended)
 Clone the repository:
 
 ```bash
@@ -35,8 +31,8 @@ bayes_factors_climate/
 ├── climate_bayes_env.yaml # Conda environment file
 └── README.md
 
-All the codes are Jupyter Notebooks except for Example 6 (deterministic models). With the ESMValTool recipe 
-the code is downloaded and the diagnostic produces the figure
+All the codes are Jupyter Notebooks except for Example 6 (deterministic models). 
+With the ESMValTool recipe  the code is downloaded and the diagnostic produces figure.
 
 
 
