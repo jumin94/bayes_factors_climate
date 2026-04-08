@@ -22,8 +22,8 @@ Repo structure
 
 bayes_factors_climate/
 ├── Example1/ # Nested model analysis (linear vs quadratic trends)
-├── Example2/ # TBD
-├── Example3/ # Breakpoint models (global warming hiatus)
+├── Example2/ # Breakpoint models (global warming hiatus)
+├── Example3/ # Correlation (ENSO --> GMST)
 ├── Example4/ # Multiple driver analysis (ENSO and IOD)
 ├── Example5/ # Record-shattering extremes analysis
 ├── Example6/ # Dynamical storyline evaluation using ESMValTool
