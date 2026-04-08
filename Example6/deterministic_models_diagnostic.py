@@ -18,6 +18,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.ticker as mticker
 from matplotlib.ticker import LogLocator, LogFormatterSciNotation
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+plt.rcParams.update({
+    "font.size": 18,          # base size (everything scales from this)
+})
 
 
 def bayes_factor_RD(obs,sl,slmean):
@@ -95,216 +100,224 @@ def make_xarr(data,time):
     name="time_array")
     return time_series
     
-def plot_mean_with_shading(ax, data, variable_name, data_source, title, obs, sl_high_high_l, sl_high_low_l, subplot_title, time, time_obs, sl_time, sl_time_long):
-    """
-    Plots the mean value across the 'ensemble' dimension with shading between
-    the highest and lowest values for each time step on a given axis.
-    
-    Parameters:
-    - ax: matplotlib.axes.Axes
-        The axis to plot on.
-    - data: xarray.Dataset
-        The dataset containing the variable to plot.
-    - variable_name: str
-        The name of the variable to plot.
-    - title: str
-        The title of the subplot.
-    """
-    # Compute the mean, max, and min values across the 'ensemble' dimension
-    mean_values = data.mean(dim='model')
-    max_values = data.max(dim='model')
-    min_values = data.min(dim='model')
-    
-    # Extract time and values for plotting
-    mean_data = mean_values.values
-    max_data = max_values.values
-    min_data = min_values.values
 
-    BF_rd_high = bayes_factor_RD(obs.sel(time=slice('1960', '2022')),
-                                 make_xarr(sl_high_high_l.values, mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
-                                 mean_values.sel(time=slice('1960', '2022')))
-    BF_rd_low = bayes_factor_RD(obs.sel(time=slice('1960', '2022')),
-                                make_xarr(sl_high_low_l.values, mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
-                                mean_values.sel(time=slice('1960', '2022')))
+# def plot_bayes_panel(ax, bf_values, title):
 
+#     bf_values = np.array(bf_values)
+#     xpos = np.arange(len(bf_values))
 
-    ax.set_title(subplot_title, fontsize=14, loc='left')
+#     # --- Evidence regions ---
+#     regions = [
+#         (1, 3, "negligible", 0.98),
+#         (3, 10, "substantial", 0.7),
+#         (10, 100, "strong", 0.5),
+#         (100, 1e5, "decisive", 0.4)
+#     ]
 
-    # Plot model mean and spread
-    if title == 'TW/GW':
-        ax.plot(time, mean_data, label='CMIP6 hist+SSP5-8.5 MEM', color='black')
-        ax.fill_between(time, min_data, max_data, color='grey', alpha=0.3, label='CMIP6 Spread')
-        ax.plot(sl_time_long, sl_high_high_l.values, color='red', label=title + ', high storyline')
-        ax.plot(sl_time_long, sl_high_low_l.values, color='blue', label=title + ', low storyline')
-    else:
-        ax.plot(time, mean_data, color='black')
-        ax.fill_between(time, min_data, max_data, color='grey', alpha=0.3)
-        ax.plot(sl_time_long, sl_high_high_l.values, color='red', label=title + ', high storyline')
-        ax.plot(sl_time_long, sl_high_low_l.values, color='blue', label=title + ', low storyline')
+#     for y0, y1, _, alpha in regions:
+#         ax.axhspan(y0, y1, color='gray', alpha=alpha, zorder=0)
 
-    # Set labels and legend
-    ax.set_xlabel('Year', fontsize=18)
-    ax.set_ylabel(variable_name, fontsize=18)
-    plt.tick_params(axis='both', which='major', labelsize=14, length=10, width=2)
-    plt.tick_params(axis='both', which='minor', labelsize=12, length=5, width=1.5)
-    
+#     # --- Bars ---
+#     bars = ax.bar(xpos, bf_values, color="#6A3D9A",
+#                   edgecolor='black', linewidth=0.6, zorder=3)
 
-    # ---------- BFs ----------
-    BF_YMIN = 1e-4
-    BF_YMAX = 100.0
+#     # Hatching for BF < 3
+#     for i, bf in enumerate(bf_values):
+#         if bf < 3:
+#             bars[i].set_facecolor("white")
+#             bars[i].set_hatch("//")
 
-    bf_high = max(float(BF_rd_high) if np.isfinite(BF_rd_high) else BF_YMIN, BF_YMIN)
-    bf_low  = max(float(BF_rd_low)  if np.isfinite(BF_rd_low)  else BF_YMIN, BF_YMIN)
-    bf_values = [bf_high, bf_low]
-    bf_colors = ["red", "blue"]
-    bar_positions = [0, 1]
+#     # --- Threshold lines ---
+#     for t in [1, 3, 10, 100]:
+#         ax.axhline(t, color='black', linestyle='--', linewidth=0.8)
 
-    # ---------- Crear inset ----------
-    ax_inset = inset_axes(ax,
-                        width="28%", height="28%",  # más grande ~30%
-                        loc="upper left",
-                        borderpad=0.8)
-    # Mover todo el inset más a la derecha y arriba para que no se superponga con eje Y
-    ax_inset.set_position([0.12, 0.60, 0.30, 0.30])  # [left, bottom, width, height]
+#     # --- Axis ---
+#     ax.set_yscale("log")
+#     ax.set_ylim(0.0001, max(bf_values) * 1.3)
 
-    # ---------- Sombreado ----------
-    ax_inset.axhspan(0.1, 10, xmin=0.05, xmax=0.95, facecolor='gray', alpha=0.15, zorder=0)
+#     ax.set_xticks(xpos)
+#     ax.set_xticklabels(["high", "low"])
 
-    # ---------- Barras ----------
-    bars = ax_inset.bar(bar_positions, bf_values, color=bf_colors, width=0.6,
-                        edgecolor='k', linewidth=0.4, zorder=2)
+#     ax.set_ylabel("Bayes factor (BF$_{10}$)")
+#     ax.set_title(title, fontsize=16, loc='left')
 
-    # ---------- Escala log y límites ----------
-    ax_inset.set_yscale('log')
-    ax_inset.set_ylim(BF_YMIN, BF_YMAX)
+#     # --- Annotate values ---
+#     for i, bf in enumerate(bf_values):
+#         y_pos = bf * 1.15 if bf >= 1 else bf * 2.5
+#         ax.text(xpos[i], y_pos, f"{bf:.2g}", ha='center', fontsize=12)
 
-    # ---------- Ticks Y ----------
-    for axis in ['both']:
-        ax_inset.tick_params(axis=axis, which='major', labelsize=8, length=3)
-        ax_inset.tick_params(axis=axis, which='minor', labelsize=8, length=2)
+#     # --- Clean ---
+#     ax.grid(True, axis="y", linestyle=":", linewidth=0.5, alpha=0.6)
+#     ax.spines['top'].set_visible(False)
+#     ax.spines['right'].set_visible(False)
 
-    ax_inset.yaxis.set_major_locator(LogLocator(base=10.0))
-    ax_inset.yaxis.set_major_formatter(LogFormatterSciNotation(base=10))
+from matplotlib.ticker import LogLocator, LogFormatterMathtext
 
-    # ---------- Etiquetas eje X ----------
-    x_labels = [f"high {title}", f"low {title}"]
-    ax_inset.set_xticks(bar_positions)
-    ax_inset.set_xticklabels(x_labels, fontsize=8, ha='center')
+def plot_bayes_panel(ax, bf_values, title):
 
-    # ---------- Texto encima de las barras ----------
-    for xi, val in zip(bar_positions, bf_values):
-        ax_inset.text(xi, val * 1.12, f"{val:.2g}", ha='center', va='bottom', fontsize=8, zorder=3)
+    bf_values = np.array(bf_values)
+    xpos = np.arange(len(bf_values))
 
-    # ---------- Línea de referencia ----------
-    ax_inset.axhline(1.0, color='gray', linestyle='--', linewidth=0.6, zorder=1)
+    # ======================
+    # Symmetric evidence regions (log-space)
+    # ======================
+    regions = [
+        (1, 3.2, "negligible", 0.95),
+        (3.2, 10, "substantial", 0.75),
+        (10, 100, "strong", 0.55),
+        (100, 1000, "decisive", 0.1),
+    ]
 
-    # ---------- Bordes del inset ----------
-    for spine in ax_inset.spines.values():
-        spine.set_linewidth(0.6)
-        spine.set_visible(True)
+    # Upper (BF > 1)
+    for y0, y1, _, alpha in regions:
+        ax.axhspan(y0, y1, color='gray', alpha=alpha, zorder=0)
 
-    # ---------- Ajuste final del eje interno ----------
-    # agregamos un poco de margen izquierdo para que las barras no toquen el eje Y
-    ax_inset.margins(x=0.15)  # aumenta el espacio horizontal a los lados
+    # Lower (BF < 1) → mirrored
+    for y0, y1, _, alpha in regions:
+        ax.axhspan(1/y1, 1/y0, color='gray', alpha=alpha, zorder=0)
 
+    # ======================
+    # Bars anchored at 1
+    # ======================
+    heights = bf_values - 1  # positive or negative
 
-    # optional: add tiny numeric labels above each bar (rounded)
-    for xi, val in zip(bar_positions, bf_values):
-        ax_inset.text(xi, val * 1.12, f"{val:.2g}", ha='center', va='bottom', fontsize=8)
+    bars = ax.bar(
+        xpos,
+        heights,
+        bottom=1,
+        color="#6A3D9A",
+        edgecolor='black',
+        linewidth=0.6,
+        zorder=3
+    )
 
-def plot_mean_with_shading(ax, data, variable_name, data_source, title, obs, sl_high_high_l, sl_high_low_l, subplot_title, time, time_obs, sl_time, sl_time_long):
-    """
-    Plots the mean value across the 'ensemble' dimension with shading between
-    the highest and lowest values for each time step on a given axis.
-    Adds an inset bar plot for Bayes factors with better centering and custom ticks.
-    """
-    FS_SUBPLOT = 14  # uniform font size for titles and labels
+    # Hatching / color for weak evidence (|BF| < 3)
+    for i, bf in enumerate(bf_values):
+        if 1/3 < bf < 3:
+            bars[i].set_facecolor("white")
+            bars[i].set_hatch("//")
 
-    # Compute mean, min, max for ensemble
-    mean_values = data.mean(dim='model')
-    max_values = data.max(dim='model')
-    min_values = data.min(dim='model')
-    mean_data = mean_values.values
-    max_data = max_values.values
-    min_data = min_values.values
+    # ======================
+    # Threshold lines (both sides)
+    # ======================
+    thresholds = [1, 3.2, 10, 100]
+    for t in thresholds:
+        ax.axhline(t, color='black', linestyle='--', linewidth=0.8, zorder=2)
+        if t != 1:
+            ax.axhline(1/t, color='black', linestyle='--', linewidth=0.8, zorder=2)
 
-    # Plot observed data
-    ax.plot(time_obs, obs.values, label=data_source, color='green', linewidth=2)
-
-    # Plot model mean and spread
-    ax.plot(time, mean_data, color='black')
-    ax.fill_between(time, min_data, max_data, color='grey', alpha=0.3)
-    ax.plot(sl_time_long, sl_high_high_l.values, color='red', label=title + ', high storyline')
-    ax.plot(sl_time_long, sl_high_low_l.values, color='blue', label=title + ', low storyline')
-
-    # Set axis labels and title
-    ax.set_xlabel('Year', fontsize=FS_SUBPLOT)
-    ax.set_ylabel(variable_name, fontsize=FS_SUBPLOT)
-    ax.set_title(subplot_title, fontsize=FS_SUBPLOT, loc='left')
-    ax.tick_params(axis='both', which='major', labelsize=FS_SUBPLOT)
-
-
-    BF_rd_high = bayes_factor_RD(obs.sel(time=slice('1960', '2022')),
-                                 make_xarr(sl_high_high_l.values, mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
-                                 mean_values.sel(time=slice('1960', '2022')))
-    BF_rd_low = bayes_factor_RD(obs.sel(time=slice('1960', '2022')),
-                                make_xarr(sl_high_low_l.values, mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
-                                mean_values.sel(time=slice('1960', '2022')))
-    
-    # --- Inset bar plot for Bayes factors ---
-    FS_BAR = 16  # font size for inset bar plot (twice as large)
-    BF_YMIN = 1e-4
-    BF_YMAX = 100.0
-    bf_high = max(float(BF_rd_high) if np.isfinite(BF_rd_high) else BF_YMIN, BF_YMIN)
-    bf_low  = max(float(BF_rd_low)  if np.isfinite(BF_rd_low)  else BF_YMIN, BF_YMIN)
-    bf_values = [bf_high, bf_low]
-    bf_colors = ["red", "blue"]
-    bar_positions = [0, 1]
-
-    # Inset axes, closer to the left
-    ax_inset = inset_axes(ax,
-                          width="35%", height="35%",
-                          loc="upper center",  # initial location
-                          borderpad=0.8)
-    
-    # Manual position adjustment: ~0.2 from left
-    ax_inset.set_position([0.20, 0.55, 0.35, 0.35])  # [left, bottom, width, height]
-
-    # Shading behind bars
-    ax_inset.axhspan(0.1, 10, xmin=0.05, xmax=0.95, facecolor='gray', alpha=0.15, zorder=0)
-
-    # Bars
-    ax_inset.bar(bar_positions, bf_values, color=bf_colors, width=0.6, edgecolor='k', linewidth=0.4, zorder=2)
-
+    # ======================
     # Log scale
-    ax_inset.set_yscale('log')
-    ax_inset.set_ylim(BF_YMIN, BF_YMAX)
-    ax_inset.axhline(1.0, color='gray', linestyle='--', linewidth=0.6, zorder=1)
+    # ======================
+    ax.set_yscale("log")
+    ax.set_ylim(1/100000, 100000)
 
-    # Custom x-tick labels
-    if title == 'GW':
-        xticks_labels = ["low GW", "high GW"]
-    elif title == 'TW/GW':
-        xticks_labels = ["low \n TW/GW", "high \n TW/GW"]
-    elif title == 'CP/GW':
-        xticks_labels = ["low \n CP/GW", "high \n CP/GW"]
+    ax.yaxis.set_major_locator(LogLocator(base=10))
+    ax.yaxis.set_major_formatter(LogFormatterMathtext(base=10))
+
+    ax.yaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2, 10)*0.1))
+    ax.yaxis.set_minor_formatter(lambda *args: "")
+
+    # ======================
+    # Labels
+    # ======================
+    ax.set_xticks(xpos)
+    ax.set_xticklabels(["high", "low"])
+
+    ax.set_ylabel("Bayes factor (BF$_{10}$)")
+    ax.set_title(title, fontsize=16, loc='left')
+
+    # ======================
+    # Annotate values
+    # ======================
+    for i, bf in enumerate(bf_values):
+        if bf >= 1:
+            y_pos = bf * 1.15
+        else:
+            y_pos = bf / 1.5
+        ax.text(xpos[i], y_pos, f"{bf:.2g}", ha='center', fontsize=12)
+
+    # ======================
+    # Clean look
+    # ======================
+    ax.grid(True, axis="y", linestyle=":", linewidth=0.5, alpha=0.6)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+def plot_mean_with_shading(ax, data, variable_name, data_source, title,
+                          obs, sl_high_high_l, sl_high_low_l,
+                          subplot_title, time, time_obs, time_sl, time_sl_long):
+
+    # --- Ensemble stats ---
+    mean_values = data.mean(dim='model')
+    max_values = data.max(dim='model')
+    min_values = data.min(dim='model')
+
+    # --- Plot time series ---
+    ax.plot(time_obs, obs.values, color='green', linewidth=2)
+    ax.plot(time, mean_values.values, color='black')
+    ax.fill_between(time, min_values.values, max_values.values,
+                    color='grey', alpha=0.3)
+
+    ax.plot(time_sl_long, sl_high_high_l.values, color='red')
+    ax.plot(time_sl_long, sl_high_low_l.values, color='blue')
+
+    # --- Titles & labels ---
+    ax.set_title(subplot_title, loc='left')
+    ax.set_xlabel('Year')
+    ax.set_ylabel(variable_name)
+    ax.tick_params(axis='both')
+
+    ax.grid(True, linestyle='--', alpha=0.5)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+    # ======================
+    # LEGEND TEXT PER PANEL
+    # ======================
+    if subplot_title == 'a)':
+        red_label = "high global warming"
+        blue_label = "low global warming"
+    elif subplot_title == 'b)':
+        red_label = "high tropical warming"
+        blue_label = "low tropical warming"
+    elif subplot_title == 'c)':
+        red_label = "high polar vortex strengthening"
+        blue_label = "low polar vortex strengthening"
     else:
-        xticks_labels = ["low", "high"]
+        red_label = "high"
+        blue_label = "low"
 
-    ax_inset.set_xticks(bar_positions)
-    ax_inset.set_xticklabels(xticks_labels, fontsize=FS_BAR, ha='center')
+    # --- Custom legend ---
+    legend_elements = [
+        Patch(facecolor='grey', alpha=0.3, label='model ensemble'),
+        Line2D([0], [0], color='black', lw=2, label='model ensemble mean'),
+        Line2D([0], [0], color='red', lw=2, label=red_label),
+        Line2D([0], [0], color='blue', lw=2, label=blue_label),
+        Line2D([0], [0], color='green', lw=2, label='observations'),
+    ]
 
-    # Minor tick formatting
-    ax_inset.yaxis.set_major_locator(LogLocator(base=10.0))
-    ax_inset.yaxis.set_major_formatter(LogFormatterSciNotation(base=10))
-    ax_inset.tick_params(axis='both', which='major', labelsize=FS_BAR, length=3)
-    ax_inset.tick_params(axis='both', which='minor', labelsize=FS_BAR, length=2)
+    ax.legend(handles=legend_elements,
+              fontsize=12,
+              frameon=False,
+              loc='upper left')
 
-    # Values on top of bars
-    for xi, val in zip(bar_positions, bf_values):
-        ax_inset.text(xi, val * 1.12, f"{val:.2g}", ha='center', va='bottom', fontsize=FS_BAR)
+    # --- Compute Bayes factors ---
+    BF_high = bayes_factor_RD(
+        obs.sel(time=slice('1960', '2022')),
+        make_xarr(sl_high_high_l.values,
+                  mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
+        mean_values.sel(time=slice('1960', '2022'))
+    )
 
+    BF_low = bayes_factor_RD(
+        obs.sel(time=slice('1960', '2022')),
+        make_xarr(sl_high_low_l.values,
+                  mean_values.sel(time=slice('1950', '2099')).time).sel(time=slice('1960', '2022')),
+        mean_values.sel(time=slice('1960', '2022'))
+    )
 
+    return float(BF_high), float(BF_low)
 
 # Function to compute the 80% probability ellipse bounds
 def find_80_percent_ellipse_values(data):
@@ -326,35 +339,55 @@ def find_80_percent_ellipse_values(data):
     return pd.DataFrame(result_dict).T
 
 
-def create_figure_with_subplots(dataset, rd, variable_name,data_source,title,obs_dict_ts,storylines_dict_high_high_long, storylines_dict_high_low_long,time,time_obs,time_sl,time_sl_long):
-    """
-    Creates a figure with four subplots, each plotting the mean value with shading between
-    the highest and lowest values for each time step.
-    
-    Parameters:
-    - dataset: xarray.Dataset
-        The dataset containing the variable to plot.
-    - variable_name: str
-        The name of the variable to plot.
-    """
-    fig, axs = plt.subplots(1, 3, figsize=(20, 6),dpi=300)
-    
-    for i in range(3):
-        ax = axs.flat[i]
-        subplot_labels = ['a)','b)','c)']
-        plot_mean_with_shading(ax, dataset[rd[i]], variable_name[i],data_source[i],title[i],obs_dict_ts[rd[i]],storylines_dict_high_high_long[rd[i]], storylines_dict_high_low_long[rd[i]], subplot_labels[i], time,time_obs,time_sl,time_sl_long)
-    
-    # Add labels and grid to each subplot
-    for i, ax in enumerate(axs.flat):
-        
-        # Customize ticks
-        ax.tick_params(axis='both', which='major', labelsize=15)
-        
-        if i != 5:
-            # Add grid
-            ax.grid(True, linestyle='--', linewidth=0.7, alpha=0.7)
+def create_figure_with_subplots(dataset, rd, variable_name, data_source,
+                                title, obs_dict_ts,
+                                storylines_dict_high_high_long,
+                                storylines_dict_high_low_long,
+                                time, time_obs, time_sl, time_sl_long):
 
+    # ---- 2 rows instead of 1 ----
+    fig, axs = plt.subplots(2, 3, figsize=(20, 10), dpi=300)
+
+    BF_results = []
+
+    # -----------------------
+    # TOP ROW: time series
+    # -----------------------
+    for i in range(3):
+        bf_high, bf_low = plot_mean_with_shading(
+            axs[0, i],
+            dataset[rd[i]],
+            variable_name[i],
+            data_source[i],
+            title[i],
+            obs_dict_ts[rd[i]],
+            storylines_dict_high_high_long[rd[i]],
+            storylines_dict_high_low_long[rd[i]],
+            ['a)', 'b)', 'c)'][i],
+            time, time_obs, time_sl, time_sl_long
+        )
+
+        BF_results.append([bf_high, bf_low])
+
+    # -----------------------
+    # BOTTOM ROW: Bayes factors
+    # -----------------------
+    for i in range(3):
+        plot_bayes_panel(
+            axs[1, i],
+            BF_results[i],
+            title=f"{['d)', 'e)', 'f)'][i]}"
+        )
+
+    # -----------------------
+    # Final styling
+    # -----------------------
+    for ax in axs.flat:
+        ax.tick_params(axis='both')
+
+    plt.subplots_adjust(hspace=0.35)
     plt.tight_layout()
+
     return fig
 
 
@@ -508,7 +541,7 @@ def main(config):
     os.chdir(config["plot_dir"])
     os.getcwd()
     os.makedirs("remote_drivers",exist_ok=True)
-    fig.savefig('/home/jmindlin/BF_codes/example_codes/Example6/dynamical_storylines_BFs.pdf',bbox_inches='tight')
+    fig.savefig('/home/jmindlin/BF_codes/example_codes/Example6/dynamical_storylines_BFs_March2026_AAAAAAA.pdf',bbox_inches='tight')
 
 
 # /climca/people/jmindlin/esmvaltool_output/full_storyline_analysis_complete_20240902_145448/run/multiple_regression_indices/multiple_regresion/settings.yml
