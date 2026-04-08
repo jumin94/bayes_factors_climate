@@ -5,6 +5,8 @@ Julia Mindlin & Marlene Kretschmer | Leipzig Institute for Meteorology, Leipzig 
 This repository contains the full set of Python examples accompanying the article...
 All examples are written for **Python 3.11** and run in a reproducible environment provided in `environment.yml`.
 
+![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://raw.githubusercontent.com/jumin94/bayes_factors_climate/master/figures/plot.png)
+
 ---
 
 Clone the repository:
@@ -35,4 +37,4 @@ All the codes are Jupyter Notebooks except for Example 6 (deterministic models).
 With the ESMValTool recipe  the code is downloaded and the diagnostic produces figure.
 
 
-![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://raw.githubusercontent.com/jumin94/bayes_factors_climate/master/figures/plot.png)
+
