@@ -35,4 +35,4 @@ All the codes are Jupyter Notebooks except for Example 6 (deterministic models).
 With the ESMValTool recipe  the code is downloaded and the diagnostic produces figure.
 
 
-
+![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work. This includes the (1) comparison of statistical models for a trend, (2) evaluation of the break-point hypothesis for trends, (3) significance maps for correlations, (4) testing multiple drivers as predictors, (5) comparison of the likelihood of record-breaking extremes under different models for trends, and (6) comparison of storylines against observations.](Figure1.png)
