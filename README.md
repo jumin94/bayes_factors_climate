@@ -35,4 +35,4 @@ All the codes are Jupyter Notebooks except for Example 6 (deterministic models).
 With the ESMValTool recipe  the code is downloaded and the diagnostic produces figure.
 
 
-![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](figures/Figure1.png)
+![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](figures/plot.png)
