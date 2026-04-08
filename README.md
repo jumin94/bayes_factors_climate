@@ -35,4 +35,4 @@ All the codes are Jupyter Notebooks except for Example 6 (deterministic models).
 With the ESMValTool recipe  the code is downloaded and the diagnostic produces figure.
 
 
-![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://github.com/jumin94/bayes_factors_climate/blob/master/figures/plot.png)
+![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://raw.githubusercontent.com/jumin94/bayes_factors_climate/master/figures/plot.png)
