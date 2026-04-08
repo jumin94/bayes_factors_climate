@@ -5,7 +5,7 @@ Julia Mindlin & Marlene Kretschmer | Leipzig Institute for Meteorology, Leipzig 
 This repository contains the full set of Python examples accompanying the article...
 All examples are written for **Python 3.11** and run in a reproducible environment provided in `environment.yml`.
 
-![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://raw.githubusercontent.com/jumin94/bayes_factors_climate/master/figures/plot.png)
+![Conceptual illustration of statistical hypotheses recurrently posed in climate science and covered in this work.](https://raw.githubusercontent.com/jumin94/bayes_factors_climate/master/Figure1.png)
 
 ---
 
